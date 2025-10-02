@@ -1,0 +1,25 @@
+*.rsuser
+*.userosscache
+*.sln.docstates
+
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+
+Generated\ Files/
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+# 以下省略（前回のDXライブラリ用でお伝えした残りを続けてください）
