@@ -1,0 +1,72 @@
+{}のなかはできること、やること
+
+// ゲーム全体のこと
+GameManager
+{
+	ゲームサイクルや勝敗の管理
+	①勝敗の記録(カウント)
+	②じゃんけんを何回するか(30先など)
+		勝敗によって
+		「君の勝ち」「君の負け」を表示
+	③再戦処理or終了処理
+}
+
+// じゃんけんのこと
+JankenManager
+{
+	じゃんけんのサイクル
+	①最初はグー
+	②じゃんけん
+	③入力待ち
+	④ぽん！
+	⑤引き分けかどうか？
+		引き分け?⑨
+	⑥あいこで
+	⑦入力待ち
+	⑧しょ！
+	⑨終了
+}
+
+player
+{
+	・選択ができる
+	・選んだものを出せる
+}
+
+npc
+{
+	・選択ができる
+	・選んだものを出せる
+	・AIを持っている
+	{
+		AIの切り替えだけ
+		使うことだけ
+		処理は中身に任せる
+	}
+}
+
+
+UI関連
+
+UIManager
+{
+	・選ばれた手をJnakenManager
+}
+
+UpdateScore
+{
+	GamaManager.Instanceから
+	winCount／loseCount／drawCount
+	を受け取り表示
+}
+
+ScaleOnSelection
+{
+	EventSystem.current.currentSelectedGameObject
+	から今の選ばれているオブジェクト(選択中の手)
+	を受け取りそれをホップアップ(ちょい大きく)する
+}
+JankenHistoryManager
+{
+	記録ができる
+}

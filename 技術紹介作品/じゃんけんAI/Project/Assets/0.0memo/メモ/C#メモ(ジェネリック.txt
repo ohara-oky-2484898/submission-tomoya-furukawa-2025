@@ -1,0 +1,440 @@
+/// <summary>
+/// ジェネリック
+/// 「データ型」をパラメータとして渡す
+/// 型パラメータ（型引数）
+/// を使って共通化(オーバーロードのような)する仕組み
+/// 
+/// </summary>
+
+// ジェネリックメソッド／ジェネリッククラス
+// どちらも where （制約）をつけることによって
+// できることの幅が広がる
+
+// 参照渡し ref (ポインタみたいに呼び出し側の値を書き換えられる)
+// インデクサ(Indexer) list[i] のように添え字で値を取り出せるようになっている。この挙動を実装してくれるもの
+// static using(using したクラスのstaticメソッドを名前空間なしで使える)
+// タプル(複数型の戻り値みたい)
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using static Utility;
+
+public class Test3 : MonoBehaviour
+{
+
+    private void Awake()
+    {
+        var list = new MyList<int>();
+
+        list.Add(1);
+        list.Log();
+
+        list.Add(2);
+        list.Log();
+
+        list.Add(3);
+        list.Log();
+
+        list.Add(4);
+        list.Log();
+
+        list.Add(5);
+        list.Log();
+
+        list.Remove(2);
+        list.Log();
+
+        for (int i = 0; i < list.Count; ++i)
+        {
+            int num = list[i];
+            Debug.Log(num);
+        }
+
+        // foreachは無理、対応していない
+        // インターフェースを理解できたらできるようになる
+
+
+        // ジェネリックメソッド
+        int a = 0, b = 5;
+        float c = 1.23f, d = 4.56f;
+
+        Debug.Log($"a: {a} , b: {b} , c: {c} , d: {d}");
+
+        // 参照渡し、呼び出し側からもこれをつけないとできない
+        // 呼び出し側の変数が変更されるためバグに繋がりやすいという点に注意
+        Swap(ref a, ref b);  // int
+        //	↓このように明示的にジェネリック型がint なのだよと教えることもできる
+        //Swap<int>(ref a, ref b);
+
+        Swap(ref c, ref d);  // float
+
+        Debug.Log($"a: {a} , b: {b} , c: {c} , d: {d}");
+    }
+
+    void Start()
+	{
+        var nameToAge = new MyKeyValuePair<string, int>();
+        nameToAge.Key = "ふるかわ";
+        nameToAge.Value = 19;
+        
+        nameToAge.Log();
+        Debug.Log($"MyKeyValuePair:{nameToAge} ");
+    }
+
+
+    // 例
+    // お試し"入れ替えるメソッド"
+    // 参照渡し ref
+    //↓"ref" これは呼び出し側の変数を書き換えれる(ポインタのようなこと)
+    private void Swap<T>(ref T a, ref T b)
+    {
+        T temp = a;
+        a = b;
+        b = temp;
+    }
+}
+
+
+#region 補足説明
+//"generic"という英単語には
+//形容詞としての意味「汎用の」
+//名詞としての意味「後発品」	//ジェネリック医薬品など
+
+//-----
+//またく同じ処理(コード)を
+//変数の "型" だけが違う
+//処理をコピペして型だけを書き換える(オーバーロード的な)
+//作れるけど面倒
+
+//→こういう時に使えるのが "ジェネリック"
+//C++でいうところのテンプレート(微妙に違う)
+//---- -
+
+//-----
+//ジェネリックとオブジェクト指向三大要素との対応
+
+//カプセル化
+//→型に依存しない処理をカプセル化できる(方に依存するものは無理)
+//→使う側がデータ型を意識しなくても正しく動くクラス / メソッドを作れる
+//→型指定をしなくても引数の変数の型から自動判断してくれる仕組み
+
+//ポリモーフィズム
+//→オーバーロードと同じようなことができる
+//-----
+
+//-----
+//型パラメータに「T」とつけるのは
+//Type の T
+//C++ のTemplate
+//あたりの頭文字が由来なのかなと思うが
+//慣例なのでつけなくてもいい
+//-----
+
+//----- ジェネリックのシリアライズ -----
+//Unity のインスペクターから値をいじってそれを保存する機能
+// [SerializeField] か public 宣言してあげるとできるやつ
+
+//  ジャネリッククラスはクラスの頭に
+// [System.Serializable]
+// をつけて、それぞれのプロパティの頭に[SerializeField]
+// をつけることで可能になる
+// インスペクターに表示されるようになる
+
+// でもUnity.2019 以前だとこれでもできない
+
+
+//-----
+
+
+//-----ジェネリックメソッド---- -
+//代表例
+//・GetComponent <>
+
+//-----ジェネリッククラス---- -
+//代表例
+//・List<>
+
+#endregion
+
+#region ジェネリックメソッド:sample
+//// 例
+//// お試し"入れ替えるメソッド"
+//			↓"ref" これは呼び出し側の変数を書き換えれる(ポインタのようなこと)
+
+//    private Swap<T>(ref T a, ref T b)
+
+//    {
+//      T temp = a;
+//      a = b;
+//      b = temp
+//    }
+
+//int a = 0, b = 5;
+//Swap(ref a, ref b)	// int
+
+
+//    float c = 1.23f, d = 4.56f;
+//Swap(ref c, ref d) 	// float
+
+//	↓このように明示的にジェネリック型がint なのだよと教えることもできる
+//	Swap<int>(ref a, ref b)
+#endregion
+
+
+#region ジェネリッククラス:sample
+//名前空間(Genericがついているものは)
+//コレクションの中でもジェネリックでできているもの
+//→ using System.Collections.Generic
+//コレクション
+//→ 配列のように複数のデータを扱えるクラス
+
+//ジェネリッククラスの作り方
+//Listは内部に配列を持っているらしい
+//簡易的な List → "MyList" を作る
+
+public class MyList<T>// int が指定されたら T の場所が int に書き変わる
+{
+    private const int DefaultCapacity = 4;
+    private T[] items = new T[DefaultCapacity];
+
+    // インデクサ(Indexer)
+    // list[i] のように添え字で値を取り出せるようになっている
+    // この挙動を実装してくれるもの
+    //public T this[int index, int index2]    // 二次元配列のように扱うこともできる
+    public T this[int index]    // 返したい値の型はitemsの型 T とした
+    {
+        get => items[index];
+        set => items[index] = value;
+    }
+
+    // 現在の容量(取得はどこでも、値の設定は外部からはできないプロパティ)
+    public int Capacity { get; private set; } = DefaultCapacity;
+
+    // 現在の要素数
+    public int Count { get; private set; } = 0;
+
+    public void Add(T element)
+    {
+        // 配列の要素数が足りない
+        if (Count == Capacity)
+        {
+            // 2倍の容量で配列を確保しなおす
+            EnsureCapacity(Capacity * 2);
+        }
+
+        // 後置
+        items[Count++] = element;
+    }
+
+    private void EnsureCapacity(int newCapacity)
+    {
+        Capacity = newCapacity;
+
+        // 新しく作ったものに要素コピーするために一旦映しておく
+        T[] prevItems = items;
+        items = new T[Capacity];
+
+        // 元の配列から新しく作った配列にコピー
+        // System.Array.Copy(コピー元, 0, コピー先, 0, size);
+        System.Array.Copy(prevItems, 0, items, 0, Count);
+    }
+
+    // リストから要素を取り除く処理
+    // 要素を直接指定する
+    public void Remove(T element)
+    {
+        // この指定した要素が配列の何番目の要素なのかを教えてくれる↓
+        // System.Array.IndexOf(配列, 見つけたい要素);
+        int index = System.Array.IndexOf(items, element);
+        RemoveAt(index);
+    }
+
+    // 配列のインデックスで指定する
+    public void RemoveAt(int index)
+    {
+        // Remove側で見つからなかった場合は
+        // -1 が帰ってくるので失敗：早期リターン
+        if (index < 0) return;
+        Count--;
+
+        // [1,2,3,4,5] で 2 を消す時は
+
+        // [3,4,5] を 2 の位置にコピーして
+
+        // [1,3,4,5] をする
+        // 正確にはこう[1,3,4,5,5] をする(最後の要素が残ってしまう)
+
+        // 最後の要素を削除するときはコピー不要
+        if (index < Count)
+        {
+            System.Array.Copy(items, index + 1, items, index, Count - index);
+        }
+
+        // 最後の要素が残るので default (int なら"0"、bool なら"false"などを表す)で上書き
+        // ※ class なら null が入るというのがポイント
+        // int とかなら新しく Add されたときに新しい値で上書きするため気にする必要はないが
+        // class だったときに default を使うことで null がはいることがポイント
+        // classへの参照をこの配列が持ち続けてしまうとメモリから解放されなくなるので
+        // 明示的に null をいれてあげるのが重要なポイント
+        // ヒープメモリに持ち続けてしまう
+        items[Count] = default;
+        // items[Count] = default(T);// の省略形 T 型のデフォルト値を返すもの
+    }
+
+    public void Log()
+    {
+        string text = $"Count: {Count}, Capacity: {Capacity}, Items: ";
+        for (int i = 0; i < Count; ++i)
+        {
+            text += $"{items[i]}";
+            Debug.Log(text);
+        }
+    }
+}
+#endregion
+
+#region ジェネリッククラス:sample（複数パラメータ）
+public struct MyKeyValuePair<TKey, TValue>
+{
+    public TKey Key { get; set; } 
+    public TValue Value { get; set; } 
+
+    public void Log()
+	{
+        Debug.Log($"Key: {Key}, Value: {Value}");
+	}
+
+    // Debug.Log($"MyKeyValuePair: {nameToAge}");
+    // ↑これを実装したいがためにオーバーライドする必要があった
+    // defaultのToString()実装だと型情報しか表示しないため
+    // それをオーバーライドして自作することで想定していることを実装可能
+    public override string ToString()
+	{
+        return $"Key: {Key}, Value: {Value}";
+    }
+}
+#endregion
+
+
+#region where 型制約
+// ジェネリックの型パラメータには制約をつけることができる
+// 制約はできることが限定されるのではなく
+// 逆にこれをつけることでできることがの幅が広がることが多い
+
+// where　ジェネリックの型パラメータ　：　制約
+// 今回はnew制約をかいていく
+//private static T Create_Instace<T>() where T : new()
+//{
+//    return new T();
+//}
+
+//// 型製薬には５種類存在する
+//{
+//    // 1. where T : class
+//    //      クラスである必要がある（参照型である必要がある）
+//    // 2. where T : struct
+//    //      structである必要がある（値型である必要がある）
+//    // 3. where T : new()
+//    //      new()ができる型（"引数なし"の"public コンストラクタ"が必要）
+//    //      また制約は複数つけることができるが
+//    //      new制約だけは"最後に指定"するルールがある
+//    // 4. where T : [class名]
+//    //      指定したクラスの継承したクラスか
+//    //      そのクラス自身である必要がある
+//    // 5. where T : [interface名]
+//    //      指定したインターフェースを実装しているか
+//    //      そのインターフェース自身である必要がある
+
+//    // 他にもC#7.3、C#8　のものもあるがC#7のためできない
+//}
+
+
+//using static Utility; //上で宣言してある、すると名前空間を外せる
+
+public class InstantiateTest : MonoBehaviour
+{
+    private void Awake()
+	{
+        GameObject prefab = Resources.Load<GameObject>("Player");
+
+        // prefabから生成、生成したもののAnimatorを取得
+        // これを楽にできる
+        GameObject obj = Instantiate(prefab);
+        Animator animator = obj.GetComponent<Animator>();
+
+        // 生成して Animator を取得
+        animator = InstantiateGetComponent<Animator>(prefab);
+        //animator = Utility.InstantiateAddComponent<Animator>(prefab);
+        // 本来このように書かないといけないものを
+        // あたかもこのクラス内に定義されているかのように使える
+
+        // 生成して BoxCollider を追加
+        BoxCollider boxCollider = InstantiateAddComponent<BoxCollider>(prefab);
+
+        // タプル(tuple)版
+        // 生成して二つを取付、取得
+        var (meshRenderer, meshFilter) = InstantiateAddComponent<MeshRenderer, MeshFilter>(prefab);
+    }
+}
+
+
+
+
+public static class Utility
+{
+
+    /// <summary>
+    /// インスタンスを生成して指定のComponentを取得する
+    /// </summary>
+    /// <typeparam name="T">指定するコンポーネント</typeparam>
+    /// <param name="original">プレハブ</param>
+    /// <returns>生成したオブジェクトの指定されたコンポーネント</returns>
+    public static T InstantiateGetComponent<T>(GameObject original)
+	{
+        GameObject go = GameObject.Instantiate(original);
+        return go.GetComponent<T>();
+        // なぜこちらは制約なしでもできるのか
+        // GetComponent はコンポーネントクラスを継承した
+        // コンポーネントだけではなくてインターフェースも
+        // GetComponent で取得できる使用になっているため
+    }
+
+    /// <summary>
+    /// 生成して指定のコンポーネントを追加
+    /// </summary>
+    /// <typeparam name="T">指定するコンポーネント</typeparam>
+    /// <param name="original">プレハブ</param>
+    /// <returns>生成したオブジェクトの指定されたコンポーネント</returns>
+    public static T InstantiateAddComponent<T>(GameObject original)
+        where T : Component
+        // 型制約がある
+        // Componentクラスを継承しているものに限定している
+        // これがないと、AddComponent でエラーが起きる
+        // なぜなら、
+        // AddComponent の内部でも where T : Component
+        // この制約があるから、Componentクラスを継承していないと
+        // 呼び出せないというルールになっているため
+    {
+        GameObject go = GameObject.Instantiate(original);
+        return go.AddComponent<T>();
+        // 制約をつけることによって
+        // AddComponent できるようになった、できることの幅が広がったということ
+    }
+
+
+    public static (T1, T2) InstantiateAddComponent<T1, T2>(GameObject original)
+    //          ↑↑↑
+    // 戻り値も二つ変えることが可能！？
+    where T1 : Component
+    where T2 : Component
+    {
+        GameObject go = GameObject.Instantiate(original);
+        return (go.AddComponent<T1>(), go.AddComponent<T2>());
+        // ↑↑↑
+        // 戻り値も二つ変えることが可能！？
+    }
+}
+
+
+#endregion

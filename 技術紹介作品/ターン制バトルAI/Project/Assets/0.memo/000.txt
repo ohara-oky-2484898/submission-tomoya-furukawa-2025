@@ -1,0 +1,269 @@
+・has-a 関係
+	{
+		・"A"は"B"を持っている
+		実装方法：
+			コンポジション
+	}
+
+・is-a  関係
+	{
+		・"A"は"B"である
+		実装方法：
+			クラス継承
+			インタフェース
+			型オブジェクト
+	}
+・can-do関係
+	{
+		・"A"は"B"ができる
+		実装方法：
+			できること単位でインタフェース切る
+	}
+・共通処理
+	{
+		実装方法：
+			ユーティリティ(utility)クラスにまとめる
+			よって、継承しなくても使える
+	}
+
+フィールド変数とプロパティ
+{
+	フィールド変数
+	クラス内部でデータを格納するために使われる変数であり
+	通常はpaivateかprotectedで宣言
+	フィールドはデータの内部的な状態を表すもので直接的にアクセスされることが多いです
+
+	プロパティ
+	フィールドへのアクセスを制御するためにゲッターセッターを提供するメカニズム
+	publicのプロパティを使うことで外部からのアクセスを制御しデータに対して
+	特定のロジックを適応することができます
+	特にプロパティのセット時にバリデーションやロジックを追加したり、
+	(バリデーション　?年齢で0未満になることがないなどの処理のこと)
+	読み取り専用 (get のみ) や書き込み専用 (set のみ) 
+	にしたりすることができます。
+}
+
+
+	
+べた依存かどうか
+	クラス内で他のクラスをnewしていないか？
+	interfaceではなく具体的なクラスを直接使っていないか
+	その依存先が変わったら他のクラスも必ず変更しないといけない？
+	テスト時に依存先の動作を差し替えできない？
+
+	依存を減らす方法
+	①インタフェース化
+	②依存性注入DI
+	③ファクトリーパターン
+
+
+UniRx
+Unity　Reactive Extentions
+イベントが起きたらリアクションする
+
+// ②順番に全員の行動を決める
+foreach (var battler in turnOrder)
+{
+    battler.DecideAction(allBattlers);
+}
+
+
+
+// ③順番に全員の行動を実行
+foreach (var battler in turnOrder)
+{
+    battler.ExecuteAction();
+}
+
+
+C#の言語仕様
+自動実装プロパティ
+    // こんな感じでプロパティしかないとき
+	public string Name { get; set; }
+
+	// 実は内部で非公開のフィールド変数
+	// 例えば↓のような
+	private string name;
+	// 変数が自動的に生成されている
+
+	// プロパティを通じてフィールドにアクセス
+    public string Name
+    {
+        get { return name; }
+        set { name = value; }
+    }
+
+
+C#　宣言／定義順
+public class MyClass
+{
+    // フィールド（プライベート変数）
+    private int _myField;
+    
+    // プロパティ
+    public int MyProperty { get; set; }
+
+    // コンストラクタ
+    public MyClass(int initialValue)
+    {
+        _myField = initialValue;
+    }
+	// monobehaviorの実行順にしたがって
+	praivate void Start()
+
+
+    // メソッド
+    private void DoSomething()
+    {
+        // ロジック
+    }
+
+    // 他のメソッド
+    public void AnotherMethod()
+    {
+        // ロジック
+    }
+}
+
+
+C# 命名規則
+｛
+	・クラス名
+	・メソッド名
+	・プロパティ名
+	・イベント名
+	・名前空間
+		? "PascalCase(パスカルケース)"
+		? 先頭文字や連なるフレーズの頭文字が大文字
+		例）PlayerController、StartGame()、
+			Health、OnGameStart、GameNamespace
+		
+	・ローカル(メソッド内)変数名
+		? "camelCase(キャメルケース)"
+		例）score、
+
+	・フィールド変数名
+		? private 変数には "_" をつけて
+			"camelCase(キャメルケース)"
+		例）_health、
+	
+	・インターフェース
+		? interface の "I" をつけて
+			"PascalCase(パスカルケース)"
+		例）IDamageable、
+
+	・定数名
+		? 全て大文字のスネークケース "UPPER_SNAKE_CASE"
+		例）MAX_SPEED、
+
+	・ユニットテストの命名規則
+		? テストするメソッド名 + 状況 + 結果（期待される結果）
+			を組み合わせた名前
+		例）TestAddPlayer_WhenPlayerIsAlreadyInGame_ShouldReturnFalse()
+｝
+
+Unity
+{
+	コンポーネント名
+		Unityのコンポーネントとしてアタッチする場合
+		Script名とクラス名を一致させる必要がある
+		例）PlayerController.cs（PlayerControllerクラスと一致）
+
+	タグ・レイヤーの命名規則
+		タグやレイヤーは、ゲーム内のオブジェクトを区別するために
+		使いますが、意味が明確でない名前を避ける
+		例）Player, Enemy, Interactable など
+		ゲームオブジェクトのタイプに基づいてタグやレイヤーを命名
+
+	アセットの命名規則
+		アセット（プレハブ、テクスチャ、マテリアルなど）の名前も
+		わかりやすく、役割を明確にすることが重要です。
+		例）PlayerPrefab, EnemyTexture, HealthBarMaterial
+}
+
+readonly 
+{
+	宣言時かコンストラクタ内でしか代入できない
+	一度セットしたら変更不可（実行時に）
+	クラス内部からも、再代入は不可（※ただしコンストラクタ内はOK）
+}
+
+
+
+
+		//Where(...) とは？
+		//C# の LINQ メソッドで、リストの中から「条件を満たす要素」だけを取り出すための関数
+		//Where の返り値は「フィルタ済みの IEnumerable（列挙可能なコレクション）」
+		//そのあと.ToList() を付けることで、最終的に List に変換
+		// trueならリストに確報されていく
+
+		// b(引数) はリストの要素1つ分で型はリストから型推論してくれる
+		// 引数は何でも可
+		// 戻り値の型は => の右側の処理の型
+
+		//var allies = allBattlers.Where(b => b.Team == this.Team && b.IsAlive).ToList();
+		//var enemies = allBattlers.Where(b => b.Team != this.Team && b.IsAlive).ToList();
+
+
+
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		using UnityEngine;
+
+
+public class CharacterData
+{
+    // 自動実装プロパティ
+    // ↓のようにフィールドがなくても
+    // コンパイル時に内部でprivate string name;
+    // という非公開のフィールドが自動で生成される
+
+    //public string name; // ←これはフィールド
+                        // public フィールドは、クラス外部から自由にアクセスされるため、
+                        // データの不整合や予期しない変更を招くことがあるため
+                        // カプセル化の原則に反しているとみなされる
+
+    // どんなときにpulicのフィールドを使うの？
+    // データへの直接アクセスが問題にならない場合。
+    // たとえば、読み取り専用のデータや、シンプルなデータオブジェクトに使うことがある
+    /// <summary>
+    /// だけど！そんな場合でもUnityはプロパティを推奨している
+    /// </summary>
+
+    // または"雑"にインスペクターからいじりたいとき
+    // 構造体や、設定クラスのようにただのデータの入れ物として使うクラスでは
+    // 冗長なゲッターセッターを省略してシンプルに書くことがある
+    /// <summary>
+    /// だけど！そんな場合でもUnityはプロパティを推奨している
+    /// </summary>
+    // ↓これは現実的かな？
+    // 定数または readonly の場合
+
+    //public string Name { get; set; }
+
+    // プロパティにしておけば読み取り専用にしたいときにできる
+    public string Name { get;  }
+    public CharacterStatus Status { get;  }  // キャラのステータス（HP, 攻撃力, 魔力, MP, 速度）
+    public Sprite Sprite { get;  }    
+    public string Team { get;  }  // "Ally" または "Enemy"
+    public IBasicAttackStrategy BasicAttackStrategy { get;  }  // "SingleHit", "Combo", "Ranged"
+    public string Role { get;  }  // 役職 ("Hero", "Warrior", "Monk", "Mage", etc.)
+
+    public CharacterData(string name, CharacterStatus status, string team, IBasicAttackStrategy basicAttackStrategy, string role, Sprite sprite)
+    {
+        this.Name = name;
+        Status = status;
+        Team = team;
+        BasicAttackStrategy = basicAttackStrategy;
+        Role = role;
+        Sprite = sprite;
+    }
+}
+
+
+

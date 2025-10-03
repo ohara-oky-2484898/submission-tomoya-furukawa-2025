@@ -1,0 +1,41 @@
+	意識したこと
+
+	①interfaceを見ればそのクラスがなにできるかわかるように実装
+	②ポリモーフィズムを意識
+	BattleManagerで
+	{
+		private List<IBattler> allBattlers;
+		これは敵と味方全て一括管理
+		
+		// 順番に並び変えたものを格納する配列
+		List<IBattler> turnOrder = turnManager.Order(stageDatasList[currentLevel].TurnOrderStrategy, allBattlers);
+
+		foreach (var battler in turnOrder)
+		{
+			battler.ExecuteAction();
+		}
+		このように全員の実行、予約などまとめて操作して
+		実装は各々で決めるということ
+
+		そうすることでBattleManagerは流れだけを指示、管理できるように
+	}
+	③共通処理をstaticクラスにまとめる
+	
+
+	全体ではないけど...
+	④できるだけプログラムが文になるように
+
+	
+	
+	初めて挑戦したこと
+	< じゃんけん >
+	interfaceの活用
+	staticクラス(utilityクラスの実装)
+	拡張メソッド(そいつが〇〇するの形でかけるように)
+	シングルトン用のジェネリッククラスの活用
+	(シングルトンにするときに全部にInstanceなど宣言するがこの共通している処理をクラスにまとめた)
+
+
+	< ターン制 >
+	CSVファイルからステージデータ、キャラデータの読み込み
+

@@ -1,0 +1,248 @@
+"generic"という英単語には
+形容詞としての意味「汎用の」
+名詞としての意味「後発品」	//ジェネリック医薬品など
+
+-----
+またく同じ処理(コード)を
+変数の "型" だけが違う
+処理をコピペして型だけを書き換える(オーバーロード的な)
+作れるけど面倒
+
+→こういう時に使えるのが "ジェネリック"
+C++でいうところのテンプレート(微妙に違う)
+-----
+
+-----
+ジェネリックとオブジェクト指向三大要素との対応
+
+カプセル化
+→型に依存しない処理をカプセル化できる(方に依存するものは無理)
+→使う側がデータ型を意識しなくても正しく動くクラス/メソッドを作れる
+→型指定をしなくても引数の変数の型から自動判断してくれる仕組み
+
+ポリモーフィズム
+→オーバーロードと同じようなことができる
+-----
+
+-----
+型パラメータに「T」とつけるのは
+Type の T
+C++ のTemplate
+あたりの頭文字が由来なのかなと思うが
+慣例なのでつけなくてもいい
+-----
+
+----- ジェネリックのシリアライズ -----
+Unity のインスペクターから値をいじってそれを保存する機能
+
+-----
+
+----- where (制約)について -----
+// ジェネリックメソッド／ジェネリッククラス
+// どちらも where （制約）をつけることによって
+// できることの幅が広がる
+
+// 参照渡し ref (ポインタみたいに呼び出し側の値を書き換えられる)
+// インデクサ(Indexer) list[i] のように添え字で値を取り出せるようになっている。この挙動を実装してくれるもの
+// static using(using したクラスのstaticメソッドを名前空間なしで使える)
+// タプル(複数型の戻り値みたい)
+-----
+
+----- ジェネリックメソッド -----
+代表例
+・GetComponent<>
+
+// 例
+// お試し"入れ替えるメソッド"
+			↓"ref" これは呼び出し側の変数を書き換えれる(ポインタのようなこと)
+	private Swap<T>(ref T a, ref T b)
+	{
+		T temp = a;
+		a = b;
+		b = temp
+	}
+	
+	int a = 0, b = 5;
+	Swap(ref a, ref b)	// int
+	
+	float c = 1.23f, d = 4.56f;
+	Swap(ref c, ref d) 	// float
+
+	↓このように明示的にジェネリック型がint なのだよと教えることもできる
+	Swap<int>(ref a, ref b)
+
+
+----- ジェネリッククラス -----
+代表例
+・List<>
+
+
+名前空間(Genericがついているものは)
+コレクションの中でもジェネリックでできているもの
+→ using System.Collections.Generic
+コレクション
+→ 配列のように複数のデータを扱えるクラス
+
+ジェネリッククラスの作り方
+Listは内部に配列を持っているらしい
+簡易的な List → "MyList" を作る
+
+--- sampleコード --- //名前空間(Genericがついているものは)
+//コレクションの中でもジェネリックでできているもの
+//→ using System.Collections.Generic
+//コレクション
+//→ 配列のように複数のデータを扱えるクラス
+
+//ジェネリッククラスの作り方
+//Listは内部に配列を持っているらしい
+//簡易的な List → "MyList" を作る
+
+public class MyList<T>// int が指定されたら T の場所が int に書き変わる
+{
+    private const int DefaultCapacity = 4;
+    private T[] items = new T[DefaultCapacity];
+
+	// インデクサ(Indexer)
+    // list[i] のように添え字で値を取り出せるようになっている
+    // この挙動を実装してくれるもの
+	//public T this[int index, int index2]    // 二次元配列のように扱うこともできる
+	public T this[int index]    // 返したい値の型はitemsの型 T とした
+	{
+        get => items[index];
+        set => items[index] = value;
+    }
+
+    // 現在の容量(取得はどこでも、値の設定は外部からはできないプロパティ)
+    public int Capacity { get; private set; } = DefaultCapacity;
+
+    // 現在の要素数
+    public int Count { get; private set; } = 0;
+
+    public void Add(T element)
+	{
+        // 配列の要素数が足りない
+        if (Count == Capacity)
+		{
+            // 2倍の容量で配列を確保しなおす
+            EnsureCapacity(Capacity * 2);
+        }
+
+        // 後置
+        items[Count++] = element;
+	}
+
+    private void EnsureCapacity(int newCapacity)
+	{
+        Capacity = newCapacity;
+
+        // 新しく作ったものに要素コピーするために一旦映しておく
+        T[] prevItems = items;
+        items = new T[newCapacity];
+
+        // 元の配列から新しく作った配列にコピー
+        // System.Array.Copy(コピー元, 0, コピー先, 0, newCapacity);
+        System.Array.Copy(prevItems, 0, items, 0, newCapacity);
+	}
+
+    // リストから要素を取り除く処理
+    // 要素を直接指定する
+    public void Remove(T element)
+	{
+        // この指定した要素が配列の何番目の要素なのかを教えてくれる↓
+        // System.Array.IndexOf(配列, 見つけたい要素);
+        int index = System.Array.IndexOf(items, element);
+        RemoveAt(index);
+	}
+
+    // 配列のインデックスで指定する
+    public void RemoveAt(int index)
+    {
+        // Remove側で見つからなかった場合は
+        // -1 が帰ってくるので失敗：早期リターン
+        if (index < 0) return;
+        Count--;
+
+        // [1,2,3,4,5] で 2 を消す時は
+
+        // [3,4,5] を 2 の位置にコピーして
+
+        // [1,3,4,5] をする
+        // 正確にはこう[1,3,4,5,5] をする(最後の要素が残ってしまう)
+
+        // 最後の要素を削除するときはコピー不要
+        if(index < Count)
+		{
+            System.Array.Copy(items, index + 1, items, index, Count - index);
+		}
+
+        // 最後の要素が残るので default (int なら"0"、bool なら"false"などを表す)で上書き
+        // ※ class なら null が入るというのがポイント
+        // int とかなら新しく Add されたときに新しい値で上書きするため気にする必要はないが
+        // class だったときに default を使うことで null がはいることがポイント
+        // classへの参照をこの配列が持ち続けてしまうとメモリから解放されなくなるので
+        // 明示的に null をいれてあげるのが重要なポイント
+        // ヒープメモリに持ち続けてしまう
+        items[Count] = default;
+        // items[Count] = default(T);// の省略形 T 型のデフォルト値を返すもの
+    }
+
+    public void Log()
+	{
+        string text = $"Count: {Count}, Capacity: {Capacity}, Items: ";
+        for (int i = 0; i < Count; ++i)
+		{
+            text += $"{items[i]}";
+            Debug.Log(text);
+		}
+	}
+}
+
+public class MyListTest : MonoBehaviour
+{
+	private void Awake()
+	{
+		var list = new MyList<int>();
+
+        list.Add(1);
+        list.Log();
+        
+        list.Add(2);
+        list.Log();
+
+        list.Add(3);
+        list.Log();
+
+        list.Add(4);
+        list.Log();
+
+        list.Add(5);
+        list.Log();
+
+        list.Remove(2);
+        list.Log();
+
+        for(int i = 0; i < list.Count; ++i)
+		{
+            int num = list[i]; 
+            Debug.Log(num);
+		}
+
+	// foreachは無理、対応していない
+	
+	// ジェネリックメソッド
+        int a = 0, b = 5;
+        float c = 1.23f, d = 4.56f;
+
+        Debug.Log($"a: {a} , b: {b} , c: {c} , d: {d}");
+
+        // 参照渡し、呼び出し側からもこれをつけないとできない
+        // 呼び出し側の変数が変更されるためバグに繋がりやすいという点に注意
+        Swap(ref a, ref b);  // int
+        //	↓このように明示的にジェネリック型がint なのだよと教えることもできる
+        //Swap<int>(ref a, ref b);
+
+        Swap(ref c, ref d);  // float
+
+        Debug.Log($"a: {a} , b: {b} , c: {c} , d: {d}");
+    }
+}

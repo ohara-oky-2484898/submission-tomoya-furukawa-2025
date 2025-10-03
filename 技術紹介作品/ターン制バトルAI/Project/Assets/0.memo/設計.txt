@@ -1,0 +1,229 @@
+作るもの
+RPG風のターン制バトルのAI
+
+計算式
+攻撃ダメージ = 物理攻撃力 / 2  + ランダム(攻撃力/2) + 1
+魔法ダメージ = 魔法攻撃力 / 2  + ランダム(攻撃力/2) + 1
+
+/// <summary>
+/// キャラのステータス
+/// </summary>
+public class CharacterStatus
+{
+    public int MaxHP;
+    public int HP;
+
+    public int Attack;  // 物理攻撃力
+
+    public int Magic;   // 魔法攻撃力（←魔法ダメージに関係）
+
+    public int MaxMP;
+    public int MP; // ←魔法を使うたびに減る（リソース）
+
+    public int Speed;
+    public CharacterStatus(int maxHP, int attack, int magic, int maxMp, int speed)
+    {
+        HP = MaxHP = maxHP;
+        Attack = attack;
+        Magic = magic;
+        MP = MaxMP = maxMp;
+        Speed = speed;
+    }
+}
+
+
+/// <summary>
+/// バトルができる
+/// 一番標準的な簡易的な
+/// 戦うなら誰でも持ってるやつ
+/// 名前、ステータス、攻撃する、死ぬというもの
+/// </summary>
+IBattler
+{
+	// 名前
+	string Name { get; }
+	// ステータス
+	CharacterStatus Status { get; }
+	// 生きてるか？
+	bool IsAlive { get; }
+
+	// 各々の攻撃、死んだときの処理
+	void Attack(IBattler target);
+	void Dead()
+}
+
+/// <summary>
+/// 殴りや剣などの物理攻撃ができるキャラ
+/// 勇者、戦士、スライムなどの物理攻撃しかできないキャラ
+/// </summary>
+IPhysicalAttacker
+{
+	// 単体攻撃のみ
+	void PhysicalAttack(IBattler target);
+}
+
+/// <summary>
+/// 回復ができるキャラ
+/// 勇者(自己単体回復のみ)
+/// 僧侶(単体回復、味方全体回復)などのキャラ
+/// </summary>
+IHealer
+{
+	// 単体回復
+	void Heal(SpellData spell, IBattler target);
+	// 全体回復
+	void Heal(SpellData spell, IBattler[] targets);
+}
+
+/// <summary>
+/// 魔法攻撃ができるキャラ
+/// 魔法使い、敵の配下2などのキャラ
+/// </summary>
+IMagicAttacker
+{
+	// 単体攻撃
+	void CastSpell(SpellData spell, IBattler[] targets);
+	// 全体攻撃
+	void CastSpell(SpellData spell, IBattler target);
+}
+
+///出てくるもの／つくるもの
+キャラクタに関するもの
+{
+	味方
+	{
+		勇者
+			{
+				IBattler			// バトルができる
+				IPhysicalAttacker	// 武器で戦うことができる
+				IHealer				// 自己回復ができる
+			}
+		戦士
+			{
+				IBattler			// バトルができる
+				IPhysicalAttacker	// 武器で戦うことができる
+			}
+		僧侶
+			{
+				IBattler			// バトルができる
+				IHealer				// 自己回復ができる
+			}
+		魔法使い
+			{
+				IBattler			// バトルができる
+				IMagicAttacker		// 魔法で戦うことができる
+			}
+	}
+
+	敵
+	{
+		スライム
+			{
+				IBattler			// バトルができる
+				IPhysicalAttacker	// 武器で戦うことができる
+			}
+		ボス
+			{
+				IBattler			// バトルができる
+				IPhysicalAttacker	// 武器で戦うことができる
+			}
+		配下①
+			{
+				IBattler			// バトルができる
+				IPhysicalAttacker	// 武器で戦うことができる
+			}
+		配下②
+			{
+				IBattler			// バトルができる
+				IMagicAttacker		// 魔法で戦うことができる
+			}
+	}
+}
+
+バトルに関するもの
+{
+	各キャラクタの共通処理など
+	public static class BattleSystem
+	{
+		// 攻撃用
+		public static void Attack(IPhysicalAttacker attacker, IBattler target){    }
+		// 魔法攻撃用
+		public static void SpellAttack(IMagicAttacker attacker, IBattler target){    }
+		// ダメージを食らう処理用
+		private static void ApplyDamage(IBattler target, int damage){	}
+		// バトル終了かどうかの確認用
+		public static bool IsBattleOver(IBattler partyA, IBattler partyB){    }
+	}
+
+	public class BattleManager
+	{
+		素早さ順に並び変える()
+		charactor[].attack
+	}
+}
+
+
+
+
+// BattleManagerでこのような書き方がしたい↓↓↓
+
+IBattler[]  charators// 素早さ順に並び変える
+for(int i= 0; i < 生き残っている人数; i++)
+{
+	charators[i].Attack()
+}
+
+
+AI(戦術)について
+{
+	何が強い行動なのか？
+	自分ならゲームでこれを意識する
+	{
+		死なない(ぎりぎりで回復を使わない)
+		人数を減らすことを狙う(集中攻撃)
+		倒しきる(残ってたらそいつからもダメージをくらうやん)
+		ヒーラーから狙う(回復される)
+	}
+}
+
+
+GameAI
+{
+	今回のAIに必要なもの
+	※判断基準になるもの
+	
+	｛攻撃｝
+	優先すべきRoll
+		{
+			ヒーラー最優先、その他同率
+		}
+		・被ったときの優先順位：例えばHPが少ないやつとか
+	
+	｛魔法｝
+	MPの無駄遣いを避ける
+	
+	｛回復｝
+	回復するタイミングの判断基準
+		・どのくらい削れてたら？
+		・次死んじゃいそうか？
+			{
+				さっきのターン食らったダメージの合計
+				より今のHPのほうが少なかったら
+				次のターン死ぬ可能性が高いよね
+			}
+
+	｛失敗したとき｝
+	基本的に行動は変えない
+	hpMaxでも回復できるし
+		{
+			ターゲットがいなかった場合
+			Attackなら
+
+
+			①何もしない状態
+			②無駄うち
+			③控えがいればそいつ
+
+			今回は②無駄うちにする
+		}
+}
